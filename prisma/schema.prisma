@@ -1,0 +1,15 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql" // 사용 중인 DB 엔진에 따라 변경 (postgresql, sqlite 등)
+  url      = env("DATABASE_URL")
+}
+
+model Cheese {
+  id        Int      @id @default(autoincrement()) // primary key
+  nickname  String                                  // 유저 닉네임
+  cheese     Int
+  createdAt DateTime @default(now())
+}
