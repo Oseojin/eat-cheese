@@ -75,16 +75,15 @@ export default function Cheese() {
   const handleClick = async () => {
     const nextBite = biteCount < 3 ? biteCount + 1 : 0;
     setBiteCount(nextBite);
+    // 애니메이션 + 사운드
+    setIsShaking(true);
+    playRandomSound();
+    setTimeout(() => setIsShaking(false), 300);
 
     if (biteCount === 2 && token && nickname) {
       const nextCheese = cheese + 1;
       setCheese(nextCheese);
       await saveCheese(token, nickname);
-
-      // 애니메이션 + 사운드
-      setIsShaking(true);
-      playRandomSound();
-      setTimeout(() => setIsShaking(false), 300);
     }
   };
 
