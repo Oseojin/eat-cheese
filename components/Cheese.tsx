@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 
 const cheeseImages = [
@@ -10,13 +10,26 @@ const cheeseImages = [
   "/images/cheese_3.png",
 ];
 
+const soundList = Array.from(
+  { length: 10 },
+  (_, i) => `/sounds/cheese${i + 1}.mp3`
+);
+
 export default function Cheese() {
   const [biteCount, setBiteCount] = useState(0);
   const [cheese, setCheese] = useState(0);
   const [token, setToken] = useState<string | null>(null);
   const [nickname, setNickname] = useState<string | null>(null);
+  const [isShaking, setIsShaking] = useState(false);
 
-  // 1. 쿼리스트링에서 token, nickname 추출
+  const audioRefs = useRef<HTMLAudioElement[]>([]);
+
+  // 사운드 초기화
+  useEffect(() => {
+    audioRefs.current = soundList.map((src) => new Audio(src));
+  }, []);
+
+  // 토큰, 닉네임, 초기 점수
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const tokenParam = params.get("token");
@@ -24,7 +37,6 @@ export default function Cheese() {
     setToken(tokenParam);
     setNickname(nicknameParam);
 
-    // 2. 서버에서 기존 cheese 점수 불러오기
     if (tokenParam) {
       fetch(`/api/cheese?token=${tokenParam}`)
         .then((res) => res.json())
@@ -37,7 +49,6 @@ export default function Cheese() {
     }
   }, []);
 
-  // 3. 서버에 점수 저장
   const saveCheese = async (token: string, nickname: string) => {
     try {
       const res = await fetch("/api/cheese", {
@@ -52,7 +63,15 @@ export default function Cheese() {
     }
   };
 
-  // 4. 클릭 로직
+  const playRandomSound = () => {
+    const randomIndex = Math.floor(Math.random() * audioRefs.current.length);
+    const sound = audioRefs.current[randomIndex];
+    if (sound) {
+      sound.currentTime = 0;
+      sound.play().catch(console.error);
+    }
+  };
+
   const handleClick = async () => {
     const nextBite = biteCount < 3 ? biteCount + 1 : 0;
     setBiteCount(nextBite);
@@ -61,6 +80,11 @@ export default function Cheese() {
       const nextCheese = cheese + 1;
       setCheese(nextCheese);
       await saveCheese(token, nickname);
+
+      // 애니메이션 + 사운드
+      setIsShaking(true);
+      playRandomSound();
+      setTimeout(() => setIsShaking(false), 300);
     }
   };
 
@@ -72,7 +96,9 @@ export default function Cheese() {
         width={400}
         height={400}
         onClick={handleClick}
-        className="cursor-pointer select-none"
+        className={`cursor-pointer select-none transition-transform duration-300 ${
+          isShaking ? "animate-shake" : ""
+        }`}
       />
       <div className="mt-4 text-xl font-bold text-yellow-600">
         Cheese: {cheese}
