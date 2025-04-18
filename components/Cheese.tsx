@@ -1,7 +1,7 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Image from "next/image";
-import { useState } from "react";
 
 const cheeseImages = [
   "/images/cheese_0.png",
@@ -10,43 +10,43 @@ const cheeseImages = [
   "/images/cheese_3.png",
 ];
 
-const saveCheeseScore = async (nickname: string, score: number) => {
-  try {
-    const res = await fetch("/api/cheese", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ nickname, score }),
-    });
-
-    if (!res.ok) {
-      throw new Error("Failed to save score");
-    }
-
-    console.log("Score saved!");
-  } catch (error) {
-    console.error("Error saving score:", error);
-  }
-};
-
 export default function Cheese() {
-  const [biteCount, setBiteCount] = useState(0); // 0,1,2,3
+  const [biteCount, setBiteCount] = useState(0);
   const [cheese, setCheese] = useState(0);
+  const [token, setToken] = useState<string | null>(null);
+  const [nickname, setNickname] = useState<string | null>(null);
 
-  const handleClick = async () => {
-    if (biteCount < 3) {
-      setBiteCount(biteCount + 1);
-    } else {
-      setBiteCount(0);
+  // 1. 쿼리스트링에서 token, nickname 추출
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setToken(params.get("token"));
+    setNickname(params.get("nickname"));
+  }, []);
+
+  // 2. 서버에 점수 저장
+  const saveCheese = async (token: string, nickname: string) => {
+    try {
+      const res = await fetch("/api/cheese", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token, nickname }), // cheese 생략
+      });
+
+      if (!res.ok) throw new Error("Failed to save cheese");
+    } catch (err) {
+      console.error(err);
     }
+  };
 
-    if (biteCount === 2) {
+  // 3. 클릭 로직
+  const handleClick = async () => {
+    const nextBite = biteCount < 3 ? biteCount + 1 : 0;
+    setBiteCount(nextBite);
+
+    if (biteCount === 2 && token && nickname) {
       const nextCheese = cheese + 1;
       setCheese(nextCheese);
-
-      // 저장 요청 (닉네임은 예시, 나중에 사용자 입력이나 로그인 연결 가능)
-      await saveCheeseScore("guest", nextCheese);
+      await saveCheese(token, nickname); // ✅ 여기도 nextCheese 제거
     }
   };
 

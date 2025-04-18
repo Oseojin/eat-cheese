@@ -8,8 +8,9 @@ datasource db {
 }
 
 model Cheese {
-  id        Int      @id @default(autoincrement()) // primary key
-  nickname  String                                  // 유저 닉네임
-  cheese     Int
+  id        Int      @id @default(autoincrement())
+  deviceId  String   @unique                        // ← JWT에서 복호화된 값 저장
+  nickname  String
+  cheese    Int
   createdAt DateTime @default(now())
 }

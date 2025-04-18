@@ -1,24 +1,40 @@
-// app/api/cheese/route.ts
-
 import prisma from "@/lib/prisma";
+import { decodeDeviceId } from "@/lib/jwt";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   try {
-    const { nickname, cheese } = await req.json();
+    const { token, nickname } = await req.json();
 
-    if (typeof nickname !== "string" || typeof cheese !== "number") {
+    const deviceId = decodeDeviceId(token);
+    if (!deviceId || typeof nickname !== "string") {
       return NextResponse.json({ message: "Invalid payload" }, { status: 400 });
     }
 
-    const created = await prisma.cheese.create({
-      data: {
-        nickname,
-        cheese,
-      },
+    const existing = await prisma.cheese.findUnique({
+      where: { deviceId },
     });
 
-    return NextResponse.json(created, { status: 201 });
+    let result;
+    if (existing) {
+      result = await prisma.cheese.update({
+        where: { deviceId },
+        data: {
+          cheese: { increment: 1 },
+          nickname,
+        },
+      });
+    } else {
+      result = await prisma.cheese.create({
+        data: {
+          deviceId,
+          nickname,
+          cheese: 1,
+        },
+      });
+    }
+
+    return NextResponse.json(result, { status: 201 });
   } catch (error) {
     console.error("POST /api/cheese error:", error);
     return NextResponse.json({ message: "Server error" }, { status: 500 });
