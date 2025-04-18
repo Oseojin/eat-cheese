@@ -64,7 +64,7 @@ export async function GET(req: NextRequest) {
       // 🧑‍🤝‍🧑 2. 전체 랭킹 반환
       const all = await prisma.cheese.findMany({
         orderBy: { cheese: "desc" }, // 점수 높은 순으로 정렬
-        take: 100, // TOP 100
+        take: 10, // TOP 10
         select: {
           nickname: true,
           cheese: true,
