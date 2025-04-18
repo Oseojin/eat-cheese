@@ -69,8 +69,8 @@ export default function Cheese() {
       <Image
         src={cheeseImages[biteCount]}
         alt="치즈"
-        width={200}
-        height={200}
+        width={400}
+        height={400}
         onClick={handleClick}
         className="cursor-pointer select-none"
       />

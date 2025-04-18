@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 
-const secret = process.env.JWT_SECRET!;
+const secret = process.env.DEVICE_JWT_SECRET!;
 
 export function decodeDeviceId(token: string): string | null {
   try {

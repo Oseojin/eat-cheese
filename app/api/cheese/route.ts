@@ -47,7 +47,10 @@ export async function GET(req: NextRequest) {
 
     if (token) {
       // 🧑‍💻 1. 개별 deviceId에 대한 점수 반환
+      console.log("received token:", token);
       const deviceId = decodeDeviceId(token);
+      console.log("decoded deviceId:", deviceId);
+
       if (!deviceId) {
         return NextResponse.json({ message: "Invalid token" }, { status: 401 });
       }
