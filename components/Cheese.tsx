@@ -19,17 +19,31 @@ export default function Cheese() {
   // 1. 쿼리스트링에서 token, nickname 추출
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    setToken(params.get("token"));
-    setNickname(params.get("nickname"));
+    const tokenParam = params.get("token");
+    const nicknameParam = params.get("nickname");
+    setToken(tokenParam);
+    setNickname(nicknameParam);
+
+    // 2. 서버에서 기존 cheese 점수 불러오기
+    if (tokenParam) {
+      fetch(`/api/cheese?token=${tokenParam}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (typeof data.cheese === "number") {
+            setCheese(data.cheese);
+          }
+        })
+        .catch((err) => console.error("Failed to load cheese:", err));
+    }
   }, []);
 
-  // 2. 서버에 점수 저장
+  // 3. 서버에 점수 저장
   const saveCheese = async (token: string, nickname: string) => {
     try {
       const res = await fetch("/api/cheese", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, nickname }), // cheese 생략
+        body: JSON.stringify({ token, nickname }),
       });
 
       if (!res.ok) throw new Error("Failed to save cheese");
@@ -38,7 +52,7 @@ export default function Cheese() {
     }
   };
 
-  // 3. 클릭 로직
+  // 4. 클릭 로직
   const handleClick = async () => {
     const nextBite = biteCount < 3 ? biteCount + 1 : 0;
     setBiteCount(nextBite);
@@ -46,7 +60,7 @@ export default function Cheese() {
     if (biteCount === 2 && token && nickname) {
       const nextCheese = cheese + 1;
       setCheese(nextCheese);
-      await saveCheese(token, nickname); // ✅ 여기도 nextCheese 제거
+      await saveCheese(token, nickname);
     }
   };
 

@@ -41,12 +41,36 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    const all = await prisma.cheese.findMany({
-      orderBy: { createdAt: "desc" },
-    });
-    return NextResponse.json(all);
+    const token = req.nextUrl.searchParams.get("token");
+
+    if (token) {
+      // 🧑‍💻 1. 개별 deviceId에 대한 점수 반환
+      const deviceId = decodeDeviceId(token);
+      if (!deviceId) {
+        return NextResponse.json({ message: "Invalid token" }, { status: 401 });
+      }
+
+      const record = await prisma.cheese.findUnique({
+        where: { deviceId },
+      });
+
+      return NextResponse.json({ cheese: record?.cheese ?? 0 });
+    } else {
+      // 🧑‍🤝‍🧑 2. 전체 랭킹 반환
+      const all = await prisma.cheese.findMany({
+        orderBy: { cheese: "desc" }, // 점수 높은 순으로 정렬
+        take: 100, // TOP 100
+        select: {
+          nickname: true,
+          cheese: true,
+          createdAt: true,
+        },
+      });
+
+      return NextResponse.json(all);
+    }
   } catch (error) {
     console.error("GET /api/cheese error:", error);
     return NextResponse.json({ message: "Server error" }, { status: 500 });
