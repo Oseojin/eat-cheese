@@ -72,9 +72,13 @@ export default function CheeseRanking() {
 
       {myCheese !== null && (
         <div className="mt-6 p-4 bg-yellow-100 border border-yellow-300 rounded text-center">
-          {myRank !== null && (
+          {myRank !== null ? (
             <span className="block text-sm text-gray-600 mt-1">
               🎖️ Your Rank: #{myRank}
+            </span>
+          ) : (
+            <span className="block text-sm text-gray-500 mt-1">
+              You are not on the leaderboard yet
             </span>
           )}
         </div>
