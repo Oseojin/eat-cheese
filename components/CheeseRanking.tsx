@@ -20,7 +20,7 @@ export default function CheeseRanking() {
     const nicknameParam = params.get("nickname");
     setNickname(nicknameParam);
 
-    const fetchMyScore = async () => {
+    const fetchMyRanking = async () => {
       if (tokenParam) {
         const res = await fetch(`/api/cheese?token=${tokenParam}`);
         const data = await res.json();
@@ -35,12 +35,13 @@ export default function CheeseRanking() {
       setRanking(data);
     };
 
-    fetchMyScore();
+    fetchMyRanking();
     fetchRanking();
 
     // 5초마다 전체 랭킹 새로고침
     const interval = setInterval(() => {
       fetchRanking();
+      fetchMyRanking();
     }, 5000);
 
     return () => clearInterval(interval);
